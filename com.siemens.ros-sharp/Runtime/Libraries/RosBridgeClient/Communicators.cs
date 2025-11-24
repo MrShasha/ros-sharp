@@ -51,7 +51,7 @@ namespace RosSharp.RosBridgeClient
 
     public delegate bool ServiceCallHandler<Tin, Tout>(Tin tin, out Tout tout) where Tin : Message where Tout : Message;
 
-#region ActionHandlers
+    #region ActionHandlers
 #if ROS2
 
     public delegate void ActionResultResponseHandler<TActionResult>(TActionResult t)
@@ -69,7 +69,7 @@ namespace RosSharp.RosBridgeClient
     public delegate void CancelActionGoalHandler(string frameId, string action); // todo: there is no message type for cancel action goal
 
 #endif
-#endregion
+    #endregion
 
     internal abstract class Communicator
     {
@@ -122,6 +122,30 @@ namespace RosSharp.RosBridgeClient
             return new Unsubscription(Id, Topic);
         }
     }
+    // NEW: Subscriber for raw JObject delivery
+    internal class JObjectSubscriber : Subscriber
+    {
+        internal override string Id { get; }
+        internal override string Topic { get; }
+        internal override Type TopicType { get { return typeof(Newtonsoft.Json.Linq.JObject); } }
+
+        internal Action<Newtonsoft.Json.Linq.JObject> SubscriptionHandler { get; }
+
+        public JObjectSubscriber(string id, string topic, Action<Newtonsoft.Json.Linq.JObject> subscriptionHandler, out Subscription subscription, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none")
+        {
+            Id = id;
+            Topic = topic;
+            SubscriptionHandler = subscriptionHandler;
+            subscription = new Subscription(id, Topic, "std_msgs/String", throttle_rate, queue_length, fragment_size, compression); // message type will be overridden
+        }
+
+        internal override void Receive(string message, ISerializer serializer)
+        {
+            // Always deliver raw JObject
+            var jObj = Newtonsoft.Json.Linq.JObject.Parse(message);
+            SubscriptionHandler.Invoke(jObj);
+        }
+    }
 
     internal class Subscriber<T> : Subscriber where T : Message
     {
@@ -137,7 +161,7 @@ namespace RosSharp.RosBridgeClient
             get => _doEnsureThreadSafety;
             set
             {
-                _doEnsureThreadSafety= value;
+                _doEnsureThreadSafety = value;
                 SetReceiveMethod();
             }
         }
@@ -246,7 +270,7 @@ namespace RosSharp.RosBridgeClient
         }
     }
 
-#region Action
+    #region Action
 #if ROS2
 
     internal abstract class ActionProvider : Communicator
@@ -433,5 +457,5 @@ namespace RosSharp.RosBridgeClient
     }
 
 #endif
-#endregion
+    #endregion
 }

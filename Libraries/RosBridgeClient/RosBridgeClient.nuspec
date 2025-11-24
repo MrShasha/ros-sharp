@@ -4,7 +4,7 @@
     <id>RosSharp$id$</id>
     <version>$version$</version>
     <title>$title$</title>
-    <authors>$author$</authors>
+    <authors>Jiří Šašek</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/siemens/ros-sharp</projectUrl>

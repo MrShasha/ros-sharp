@@ -14,10 +14,10 @@
     <Copyright>Copyright © 2025</Copyright>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
     <FileVersion>2.2.0.0</FileVersion>
-    <Version>2.2.0</Version>
+    <Version>2.2.0-jiri</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<PackageId Condition="'$(Configuration)' == 'ROS2'">Siemens.RosSharp.RosBridgeClient.ROS2</PackageId>
-	<PackageId Condition="'$(Configuration)' == 'Release'">Siemens.RosSharp.RosBridgeClient.ROS1</PackageId>
+	<PackageId Condition="'$(Configuration)' == 'ROS2'">Siemens.RosSharp.RosBridgeClient.ROS2.ForkedByJiri</PackageId>
+	<PackageId Condition="'$(Configuration)' == 'Release'">Siemens.RosSharp.RosBridgeClient.ROS1.ForkedByJiri</PackageId>
     <Title>RosBridgeClient</Title>
     <Authors>ros-sharp</Authors>
 	<EnablePackageValidation>true</EnablePackageValidation>

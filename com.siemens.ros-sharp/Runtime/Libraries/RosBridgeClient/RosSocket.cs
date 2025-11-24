@@ -41,7 +41,7 @@ namespace RosSharp.RosBridgeClient
         public enum SerializerEnum { Microsoft, Newtonsoft_JSON }
 
         public SerializerEnum SerializerType;
-        
+
         private readonly Dictionary<SerializerEnum, ISerializer> serializerDictionary = new Dictionary<SerializerEnum, ISerializer>()
         {
             { SerializerEnum.Microsoft, new MicrosoftSerializer()},
@@ -142,7 +142,7 @@ namespace RosSharp.RosBridgeClient
             {
                 id = GetUnusedCounterID(Subscribers, topic);
                 Subscription subscription;
-
+                    
                 var subscriber = new Subscriber<T>(id, topic, subscriptionHandler, out subscription, throttle_rate, queue_length, fragment_size, compression)
                 {
                     DoEnsureThreadSafety = ensureThreadSafety
@@ -151,7 +151,50 @@ namespace RosSharp.RosBridgeClient
                 Subscribers.Add(id, subscriber);
                 Send(subscription);
             }
-            
+
+            return id;
+        }
+
+        // New method by Jiri Sasek - to subscribe with explicit message type
+        public string SubscribeWithMessageType<T>(string topic, string messageType, SubscriptionHandler<T> subscriptionHandler, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none", bool ensureThreadSafety = false) where T : Message
+        {
+            string id;
+            lock (SubscriberLock)
+            {
+                // Generate ID
+                id = GetUnusedCounterID(Subscribers, topic);
+                Subscription subscription;
+
+                // We create a subscriber. It internally thinks the type is T
+                // But 'out subscription' is a message that is sent to ROSbridge.
+                var subscriber = new Subscriber<T>(id, topic, subscriptionHandler, out subscription, throttle_rate, queue_length, fragment_size, compression)
+                {
+                    DoEnsureThreadSafety = ensureThreadSafety
+                };
+
+                // We will override the message type in the request that goes to ROS
+                subscription.type = messageType;
+
+                Subscribers.Add(id, subscriber);
+                Send(subscription);
+            }
+
+            return id;
+        }
+
+        // NEW: Subscribe with explicit message type, delivering raw JObject
+        public string SubscribeWithMessageTypeJObject(string topic, string messageType, Action<Newtonsoft.Json.Linq.JObject> subscriptionHandler, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none")
+        {
+            string id;
+            lock (SubscriberLock)
+            {
+                id = GetUnusedCounterID(Subscribers, topic);
+                Subscription subscription;
+                var subscriber = new JObjectSubscriber(id, topic, subscriptionHandler, out subscription, throttle_rate, queue_length, fragment_size, compression);
+                subscription.type = messageType;
+                Subscribers.Add(id, subscriber);
+                Send(subscription);
+            }
             return id;
         }
 
@@ -235,6 +278,8 @@ namespace RosSharp.RosBridgeClient
         {
             Send(ActionProviders[id].RespondResult<TActionResult, TResult>(ActionResult));
         }
+
+
         public void UnadvertiseAction(string id)
         {
             Send(ActionProviders[id].UnadvertiseAction());
@@ -298,7 +343,7 @@ namespace RosSharp.RosBridgeClient
             byte[] buffer = ((MessageEventArgs)e).RawData;
             DeserializedObject jsonElement = Serializer.Deserialize(buffer);
 
-            switch (jsonElement.GetProperty("op"))            
+            switch (jsonElement.GetProperty("op"))
             {
                 case "publish":
                     {
