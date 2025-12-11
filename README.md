@@ -1,3 +1,68 @@
+## Purpose of this fork ##
+** Solved problem**: While working on my project I needed to subscribe to such custom ROS messages, that did not have their C# class counterparts in the RosSharp library.
+One way would be to simply add these new C# classes to the RosSharp library manually, but this would require me to update this external library every time I need a support for new message type.
+Since this need is quite common in robotics projects, I decided to fork the RosSharp repository and add a feature that would allow to subscribe to a topic and receive messages of any type, without having to serialize them to a C# class for this type in the RosSharp library while only using json to transfer the information.
+
+** How to use**: To subscribe to a topic with custom message type, use the new `SubscribeWithMessageTypeJObject` method of the `RosSocket` class. You can call it from your code for example like this:
+```csharp
+  public Task<string> SubscribeDynamicAsync(string topic, string messageType, Action<object> callback)
+{
+    if (!IsConnected)
+    {
+        _logger.LogError("Not connected.");
+        return Task.FromResult(string.Empty);
+    }
+
+    try
+    {
+        _logger.LogInformation("Creating dynamic subscription for topic '{Topic}' with type '{MessageType}'",
+            topic, messageType);
+
+        // Use new RosSharp method for raw JObject delivery
+        string id = _rosSocket!.SubscribeWithMessageTypeJObject(
+            topic,
+            messageType,
+            (Newtonsoft.Json.Linq.JObject jObj) =>
+            {
+                _uiDispatcher.InvokeAsync(() =>
+                {
+                    try
+                    {
+                        callback(jObj);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing dynamic JObject message callback");
+                    }
+                });
+            }
+        );
+
+        if (!string.IsNullOrEmpty(id))
+        {
+            Interlocked.Increment(ref _activeSubscriptions);
+            UpdateSubscriptionState();
+            _logger.LogInformation("Dynamic subscription successful: Topic='{Topic}', Type='{MessageType}', ID='{SubId}'",
+                topic, messageType, id);
+        }
+        else
+        {
+            _logger.LogError("Dynamic subscription failed - empty ID returned");
+        }
+
+        return Task.FromResult(id);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Failed to create dynamic subscription for topic '{Topic}'", topic);
+        return Task.FromResult(string.Empty);
+    }
+}
+
+```
+
+## Original README: ##
+
 [<img src="https://github.com/siemens/ros-sharp/wiki/img/Home_RosSharpLogo.png" width="480" alt ="ROS#"/>](https://github.com/siemens/ros-sharp)
 
 ## Overview ##

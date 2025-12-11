@@ -155,34 +155,10 @@ namespace RosSharp.RosBridgeClient
             return id;
         }
 
-        // New method by Jiri Sasek - to subscribe with explicit message type
-        /*public string SubscribeWithMessageType<T>(string topic, string messageType, SubscriptionHandler<T> subscriptionHandler, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none", bool ensureThreadSafety = false) where T : Message
-        {
-            string id;
-            lock (SubscriberLock)
-            {
-                // Generate ID
-                id = GetUnusedCounterID(Subscribers, topic);
-                Subscription subscription;
-
-                // We create a subscriber. It internally thinks the type is T
-                // But 'out subscription' is a message that is sent to ROSbridge.
-                var subscriber = new Subscriber<T>(id, topic, subscriptionHandler, out subscription, throttle_rate, queue_length, fragment_size, compression)
-                {
-                    DoEnsureThreadSafety = ensureThreadSafety
-                };
-
-                // We will override the message type in the request that goes to ROS
-                subscription.type = messageType;
-
-                Subscribers.Add(id, subscriber);
-                Send(subscription);
-            }
-
-            return id;
-        }*/
-
-        // Subscribe with explicit message type, delivering raw JObject
+        /**
+        *  Subscribe with explicit message type, delivering raw JObject
+        *  © Added by Jiří Šašek, 2025
+        */
         public string SubscribeWithMessageTypeJObject(string topic, string messageType, Action<Newtonsoft.Json.Linq.JObject> subscriptionHandler, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none")
         {
             string id;

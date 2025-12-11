@@ -122,7 +122,11 @@ namespace RosSharp.RosBridgeClient
             return new Unsubscription(Id, Topic);
         }
     }
-    // Subscriber for raw JObject delivery
+
+    /**
+     *  Subscriber for raw JObject delivery
+     *  © Added by Jiří Šašek, 2025
+     */
     internal class JObjectSubscriber : Subscriber
     {
         internal override string Id { get; }
@@ -141,7 +145,7 @@ namespace RosSharp.RosBridgeClient
 
         internal override void Receive(string message, ISerializer serializer)
         {
-            // Always deliver raw JObject
+            // Deliver raw JObject
             var jObj = Newtonsoft.Json.Linq.JObject.Parse(message);
             SubscriptionHandler.Invoke(jObj);
         }
