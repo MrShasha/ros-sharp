@@ -60,6 +60,9 @@ Since this need is quite common in robotics projects, I decided to fork the RosS
 }
 
 ```
+I will be uploading this version of the RosSharp library to NuGet in the future but for now feel free to use it locally.
+
+
 
 ## Original README: ##
 
