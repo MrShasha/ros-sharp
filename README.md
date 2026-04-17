@@ -1,3 +1,4 @@
+> Author of this fork: Jiří Šašek, mrsasekjiri@gmail.com
 ## Purpose of this fork ##
 ** Solved problem ** : While working on my project I needed to subscribe to such custom ROS messages, that did not have their C# class counterparts in the RosSharp library.
 One way would be to simply add these new C# classes to the RosSharp library manually, but this would require me to update this external library every time I need a support for new message type.
@@ -60,9 +61,6 @@ Since this need is quite common in robotics projects, I decided to fork the RosS
 }
 
 ```
-I will be uploading this version of the RosSharp library to NuGet in the future but for now feel free to use it locally.
-
-
 
 ## Original README: ##
 
